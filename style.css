@@ -1,0 +1,61 @@
+// Vercel serverless function: /api/characters?account=NAME&realm=pc
+// Proxies the official (unauthenticated) Path of Exile "get-characters" endpoint.
+// A server-side proxy is required because pathofexile.com does not send
+// CORS headers, so browsers can't call it directly from client-side JS.
+
+export default async function handler(req, res) {
+  const { account, realm } = req.query;
+
+  if (!account || !account.trim()) {
+    return res.status(400).json({ error: 'Missing "account" query parameter.' });
+  }
+
+  const validRealms = new Set(['pc', 'xbox', 'sony']);
+  const useRealm = validRealms.has(realm) ? realm : 'pc';
+
+  const url = new URL('https://www.pathofexile.com/character-window/get-characters');
+  url.searchParams.set('accountName', account.trim());
+  url.searchParams.set('realm', useRealm);
+
+  try {
+    const upstream = await fetch(url.toString(), {
+      headers: {
+        // GGG asks API consumers to identify themselves with a descriptive UA.
+        'User-Agent': 'PoE-Progress-Tracker/1.0 (contact: set-your-contact-here)',
+        'Accept': 'application/json',
+      },
+    });
+
+    const text = await upstream.text();
+
+    // The endpoint returns 403/404 with an HTML or JSON error body for
+    // private profiles / unknown accounts rather than a clean JSON error.
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return res.status(502).json({
+        error: 'Unexpected response from the Path of Exile API. The account may not exist or its profile may be private.',
+      });
+    }
+
+    if (!upstream.ok) {
+      const message =
+        (data && data.error && data.error.message) ||
+        'That account could not be found, or its character list is private.';
+      return res.status(upstream.status).json({ error: message });
+    }
+
+    if (!Array.isArray(data)) {
+      return res.status(404).json({
+        error: 'No public characters found for that account. Make sure "Public Profile" is enabled on pathofexile.com.',
+      });
+    }
+
+    // Cache briefly at the edge to be a good API citizen without going stale.
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
+    return res.status(200).json({ characters: data });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to reach the Path of Exile API. Please try again.' });
+  }
+}

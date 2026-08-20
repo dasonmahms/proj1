@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wraeclast Ledger — PoE Character Tracker</title>
+<meta name="description" content="Look up any public Path of Exile account and see its characters at a glance." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="embers" aria-hidden="true"></div>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">exile • account lookup</p>
+      <h1 class="wordmark">WRAECLAST<span>LEDGER</span></h1>
+      <p class="tagline">Enter a public Path of Exile account name to pull its characters straight from the Grinding Gear Games API.</p>
+
+      <form id="search-form" class="search-form" autocomplete="off">
+        <input
+          id="account-input"
+          type="text"
+          name="account"
+          placeholder="AccountName#1234"
+          aria-label="Path of Exile account name"
+          required
+        />
+        <select id="realm-select" aria-label="Platform">
+          <option value="pc">PC</option>
+          <option value="xbox">Xbox</option>
+          <option value="sony">PlayStation</option>
+        </select>
+        <button type="submit" id="search-btn">
+          <span class="btn-label">Reveal</span>
+        </button>
+      </form>
+      <p class="hint">Profile must be set to <strong>Public</strong> at pathofexile.com → Account Settings → Privacy.</p>
+    </div>
+  </header>
+
+  <main>
+    <section id="status" class="status" hidden></section>
+
+    <section id="results" class="results" hidden>
+      <div class="results-head">
+        <h2 id="results-account"></h2>
+        <span id="results-count" class="count-badge"></span>
+      </div>
+      <div id="card-grid" class="card-grid"></div>
+    </section>
+
+    <section id="empty-state" class="empty-state">
+      <div class="rune">⧗</div>
+      <p>No account revealed yet. The ledger is blank until you search.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Unofficial fan tool. Not affiliated with or endorsed by Grinding Gear Games. Data via the public Path of Exile API.</p>
+  </footer>
+
+  <template id="card-template">
+    <article class="char-card">
+      <div class="card-top">
+        <span class="seal" data-field="level">1</span>
+        <div class="card-titles">
+          <h3 data-field="name">—</h3>
+          <p class="class-line" data-field="class">—</p>
+        </div>
+      </div>
+      <div class="card-meta">
+        <span class="league-badge" data-field="league">—</span>
+        <span class="xp-line" data-field="xp">—</span>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>

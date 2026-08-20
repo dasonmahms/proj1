@@ -1,0 +1,9 @@
+{
+  "name": "wraeclast-ledger",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Public Path of Exile character tracker — looks up any public account via the official PoE API.",
+  "engines": {
+    "node": ">=18"
+  }
+}
